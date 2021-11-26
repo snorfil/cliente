@@ -1,4 +1,4 @@
-import javax.sound.midi.Track;
+import javax.xml.parsers.SAXParser;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -12,12 +12,14 @@ public class servidor extends Thread{
     private Socket clientSocket;
     ArrayList<BufferedReader> entradas;
     ArrayList<PrintWriter> salidas;
+    Partida partidas;
 
     public servidor() throws IOException {
-        start(1568);
+        Init(1568);
     }
-    public void start(int port) throws IOException {
+    public void Init(int port) throws IOException {
 
+        System.out.println("____debug____Servidor : creando servidor central");
         serverSocket = new ServerSocket(port);
         salidas = new ArrayList<>();
         entradas = new ArrayList<>();
@@ -30,31 +32,37 @@ public class servidor extends Thread{
         while (true)
         {
             try {
+                System.out.println("____debug____Servidor : Accept()");
 
                 clientSocket = serverSocket.accept();
 
+                System.out.println("____debug____Servidor : añadiendo jugador.....");
                 PrintWriter out;
                 BufferedReader in;
 
                 out = new PrintWriter(clientSocket.getOutputStream(), true);
-                in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-                entradas.add(in);
                 salidas.add(out);
 
-                if (entradas.size() == 2)
-                {
-                    new Partida(salidas).start();
-                    for (int i = 0; i < 2; i++) {
 
-                        salidas.get(i).println(500);
-                        salidas.get(i).close();
-                    }
-                    entradas.clear();
-                    salidas.clear();
+                if (salidas.size() == 2)
+                {
+                    System.out.println("____debug____Servidor : creando partida con " + salidas.size() + " jugadores");
+                    new Partida(salidas,500);
+
                 }
+
+//                if (entradas.size() == 2)
+//                {
+//                    partidas = new Partida(salidas);
+//
+//
+//                    entradas.clear();
+//                    salidas.clear();
+//                }
             }catch (IOException e)
             {
+                System.out.println("El servidor central no se creó");
             }
         }
     }

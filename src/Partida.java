@@ -1,79 +1,98 @@
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 
-public class Partida extends Thread implements comunicacion{
+public class Partida extends Thread implements comunicacion {
 
-    final int puerto = 500;
+    final int puerto ;
+    private boolean enable = true;
+
     ArrayList<PrintWriter> out;
-    ArrayList<cliente> jugadores;
+    ArrayList<Jugador> jugadores;
+    private Partida partida = this;
     int resultado = 0;
     private ServerSocket serverSocket;
 
-    public Partida(ArrayList<PrintWriter> salidas)
-    {
-        out     = salidas;
+    public Partida(ArrayList<PrintWriter> salidas,int port) {
+        puerto = port;
+        out = salidas;
         jugadores = new ArrayList<>();
-
-        try {
-            serverSocket = new ServerSocket(puerto);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    inicio();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
-
-
-
-    }
-    private void inicio() throws IOException {
-        int contador = 1;
-       while (true)
-       {
-           Socket sk = serverSocket.accept();
-           jugadores.add(new cliente(sk, this,contador));
-           contador++;
-           if (contador == 3)
-               break;
-       }
-       jugadores.get(0).start();
-       jugadores.get(1).start();
+        partida.start();
     }
 
     @Override
     public void run() {
         super.run();
-
         try {
-            inicio();
+            serverSocket = new ServerSocket(puerto);
+            System.out.println("enviando puerto a los clientes");
+            for (PrintWriter i:out) {
+                i.println(puerto);
+                i.close();
+            }
 
+            int contador = 1;
+            while (true) {
+                Socket sk = serverSocket.accept();
+                System.out.println("___Partida___ Aceptado jugador a partida....");
+
+                BufferedReader reader = new BufferedReader(new InputStreamReader(sk.getInputStream()));
+                PrintWriter writer = new PrintWriter(sk.getOutputStream(),true);
+                jugadores.add(new Jugador(writer,reader, partida, contador));
+
+                contador++;
+
+                if (jugadores.size() == 2) {
+                    System.out.println("___Partida___ iniciando juego!!!!!");
+                    for (Jugador i:jugadores) {
+                        i.start();
+
+                    }
+                }
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+
     }
+
+
 
     @Override
     public synchronized void broadcast(int jugador) {
         System.out.println("jugador : " + jugador);
-        if (jugador == 1)
-        {
+        if (jugador == 1) {
             resultado++;
-        }else
-        {
+        } else {
             resultado--;
         }
 
+    }
+
+    @Override
+    public void destruir() {
+
+        if (enable)
+        {
+            System.out.println("Destruyendo partida");
+            enable = false;
+            for (Jugador i:jugadores) {
+                i.destroy();
+                i.interrupt();
+            }
+            this.interrupt();
+            System.out.println("DESTRUYENDO LA PARTIDA");
+            try {
+                serverSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
 
