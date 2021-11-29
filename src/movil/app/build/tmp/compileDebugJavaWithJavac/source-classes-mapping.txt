@@ -1,6 +1,0 @@
-com/example/chart/BuildConfig.java
- com.example.chart.BuildConfig
-com/example/chart/Cliente_pruebas.java
- com.example.chart.Cliente_pruebas
-com/example/chart/MainActivity.java
- com.example.chart.MainActivity
