@@ -14,7 +14,7 @@ public class Jugador extends Thread {
     {
         inter       = comunication;
         out         = writer;
-        in = reader;
+        in          = reader;
         jugador     = player;
 
     }
@@ -31,11 +31,12 @@ public class Jugador extends Thread {
     @Override
     public void run() {
         try {
+            out.println("\n");
             while (true)
             {
-                System.out.println("____DEBUG____ Jugador : empezando recepccion de eventos de cliente");
-                out.println("\n");
+                System.out.println("____DEBUG____ Jugador :"+ jugador + " empezando recepccion de eventos de cliente");
                 in.readLine();
+                System.out.println("____DEBUG____ Jugador :"+ jugador + " recibido");
                 inter.broadcast(jugador);
             }
         } catch (IOException e) {
