@@ -49,7 +49,6 @@ public class servidor extends Thread{
                 {
                     System.out.println("____debug____Servidor : creando partida con " + salidas.size() + " jugadores");
                     new Partida(salidas,500);
-
                 }
 
 //                if (entradas.size() == 2)
